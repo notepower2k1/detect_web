@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bật/Tắt Notification</title>
+</head>
+
+<body>
+    <button id="notifyButton">Bật Thông Báo</button>
+    <h1 id="platform"></h1>
+    <script>
+
+        function detectPlatform() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                return "Web";
+            } else {
+                // Kiểm tra Android
+                if (/android/i.test(userAgent)) {
+                    return "Android";
+                }
+
+                // Kiểm tra iOS
+                if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                    return "iOS";
+                }
+
+                // Trường hợp không xác định, mặc định là Web (Mobile Emulation hoặc khác)
+                return "Web";
+            }
+        }
+
+        const platform = document.getElementById('platform');
+        platform.textContent = 'Người dùng dang sử dụng: ' + detectPlatform();
+
+        const button = document.getElementById('notifyButton');
+        let notificationsEnabled = false;
+
+        // Hàm để yêu cầu quyền thông báo
+        function requestNotificationPermission() {
+            if (Notification.permission === "granted") {
+                return true; // Đã cấp quyền
+            } else if (Notification.permission !== "denied") {
+                return Notification.requestPermission().then(permission => {
+                    return permission === "granted";
+                });
+            }
+            return false; // Quyền bị từ chối
+        }
+
+        // Hàm để hiển thị thông báo
+        function showNotification() {
+            if (notificationsEnabled) {
+                new Notification("Đây là thông báo từ web app của bạn!");
+            }
+        }
+
+        // Sự kiện khi nhấn nút
+        button.addEventListener('click', async () => {
+            if (!notificationsEnabled) {
+                // Yêu cầu quyền thông báo nếu chưa được cấp
+                const granted = await requestNotificationPermission();
+                if (granted) {
+                    notificationsEnabled = true;
+                    button.textContent = "Tắt Thông Báo";
+                    showNotification(); // Hiển thị thông báo ngay lập tức
+                } else {
+                    alert("Bạn cần cấp quyền thông báo để sử dụng tính năng này.");
+                }
+            } else {
+                // Tắt thông báo
+                notificationsEnabled = false;
+                button.textContent = "Bật Thông Báo";
+            }
+        });
+    </script>
+</body>
+
+</html>
