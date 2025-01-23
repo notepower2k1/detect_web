@@ -1,0 +1,1 @@
+Detech os type
